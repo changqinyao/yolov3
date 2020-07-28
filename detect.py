@@ -4,6 +4,21 @@ from models import *  # set ONNX_EXPORT in models.py
 from utils.datasets import *
 from utils.utils import *
 
+def format_prediction_string(boxes, scores):
+    pred_strings = []
+    for j in zip(scores, boxes):
+        pred_strings.append("{0:.4f} {1} {2} {3} {4}".format(j[0], j[1][0], j[1][1], j[1][2], j[1][3]))
+
+    return " ".join(pred_strings)
+
+def xyxy2x0y0wh(x):
+    # Convert nx4 boxes from [x1, y1, x2, y2] to [x0, y0, w, h] where xy1=top-left, xy2=bottom-right
+    y = torch.zeros_like(x) if isinstance(x, torch.Tensor) else np.zeros_like(x)
+    y[:, 0] = x[:, 0] # x0
+    y[:, 1] = x[:, 1] # y0
+    y[:, 2] = x[:, 2] - x[:, 0]  # width
+    y[:, 3] = x[:, 3] - x[:, 1]  # height
+    return y
 
 def detect(save_img=False):
     imgsz = (320, 192) if ONNX_EXPORT else opt.img_size  # (320, 192) or (416, 256) or (608, 352) for (height, width)
@@ -77,6 +92,10 @@ def detect(save_img=False):
     t0 = time.time()
     img = torch.zeros((1, 3, imgsz, imgsz), device=device)  # init img
     _ = model(img.half() if half else img.float()) if device.type != 'cpu' else None  # run once
+
+    # i add
+    results = []
+
     for path, img, im0s, vid_cap in dataset:
         img = torch.from_numpy(img).to(device)
         img = img.half() if half else img.float()  # uint8 to fp16/32
@@ -155,6 +174,15 @@ def detect(save_img=False):
                         h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
                         vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*opt.fourcc), fps, (w, h))
                     vid_writer.write(im0)
+        # i add
+        boxes, scores = det[:, :4], det[:, 4]
+        boxes_wh = xyxy2x0y0wh(boxes)
+        result = {
+            'image_id': Path(p).name,
+            'PredictionString': format_prediction_string(boxes_wh, scores)
+        }
+
+        results.append(result)
 
     if save_txt or save_img:
         print('Results saved to %s' % os.getcwd() + os.sep + out)
@@ -162,6 +190,10 @@ def detect(save_img=False):
             os.system('open ' + save_path)
 
     print('Done. (%.3fs)' % (time.time() - t0))
+
+    return results
+
+
 
 
 if __name__ == '__main__':
@@ -188,4 +220,12 @@ if __name__ == '__main__':
     print(opt)
 
     with torch.no_grad():
-        detect()
+       # detect()
+        results=detect()
+
+# i add
+    import pandas as pd
+
+    test_df = pd.DataFrame(results, columns=['image_id', 'PredictionString'])
+    test_df.head()
+    test_df.to_csv('submission.csv', index=False)
