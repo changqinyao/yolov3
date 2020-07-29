@@ -175,12 +175,18 @@ def detect(save_img=False):
                         vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*opt.fourcc), fps, (w, h))
                     vid_writer.write(im0)
         # i add
-        boxes, scores = det[:, :4], det[:, 4]
-        boxes_wh = xyxy2x0y0wh(boxes)
-        result = {
-            'image_id': Path(p).name[:-4],
-            'PredictionString': format_prediction_string(boxes_wh, scores)
-        }
+        if det is not None:
+            boxes, scores = det[:, :4], det[:, 4]
+            boxes_wh = xyxy2x0y0wh(boxes)
+            result = {
+                'image_id': Path(p).name[:-4],
+                'PredictionString': format_prediction_string(boxes_wh, scores)
+            }
+        else:
+            result={
+                'image_id': Path(p).name[:-4],
+                'PredictionString': ''
+            }
 
         results.append(result)
 
