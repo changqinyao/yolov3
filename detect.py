@@ -27,9 +27,9 @@ def detect(save_img=False):
 
     # Initialize
     device = torch_utils.select_device(device='cpu' if ONNX_EXPORT else opt.device)
-    if os.path.exists(out):
-        shutil.rmtree(out)  # delete output folder
-    os.makedirs(out)  # make new output folder
+    # if os.path.exists(out):
+    #     shutil.rmtree(out)  # delete output folder
+    # os.makedirs(out)  # make new output folder
 
     # Initialize model
     model = Darknet(opt.cfg, imgsz)
@@ -160,40 +160,40 @@ def detect(save_img=False):
                     raise StopIteration
 
             # Save results (image with detections)
-            if save_img:
-                if dataset.mode == 'images':
-                    cv2.imwrite(save_path, im0)
-                else:
-                    if vid_path != save_path:  # new video
-                        vid_path = save_path
-                        if isinstance(vid_writer, cv2.VideoWriter):
-                            vid_writer.release()  # release previous video writer
-
-                        fps = vid_cap.get(cv2.CAP_PROP_FPS)
-                        w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-                        h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                        vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*opt.fourcc), fps, (w, h))
-                    vid_writer.write(im0)
+            # if save_img:
+            #     if dataset.mode == 'images':
+            #         cv2.imwrite(save_path, im0)
+            #     else:
+            #         if vid_path != save_path:  # new video
+            #             vid_path = save_path
+            #             if isinstance(vid_writer, cv2.VideoWriter):
+            #                 vid_writer.release()  # release previous video writer
+            #
+            #             fps = vid_cap.get(cv2.CAP_PROP_FPS)
+            #             w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            #             h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            #             vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*opt.fourcc), fps, (w, h))
+            #         vid_writer.write(im0)
         # i add
         if det is not None:
             boxes, scores = det[:, :4], det[:, 4]
             boxes_wh = xyxy2x0y0wh(boxes)
             result = {
-                'image_id': Path(p).name[:-4],
+                'image_id': Path(p).name.split('.')[0],
                 'PredictionString': format_prediction_string(boxes_wh, scores)
             }
         else:
             result={
-                'image_id': Path(p).name[:-4],
+                'image_id': Path(p).name.split('.')[0],
                 'PredictionString': ''
             }
 
         results.append(result)
 
-    if save_txt or save_img:
-        print('Results saved to %s' % os.getcwd() + os.sep + out)
-        if platform == 'darwin':  # MacOS
-            os.system('open ' + save_path)
+    # if save_txt or save_img:
+    #     print('Results saved to %s' % os.getcwd() + os.sep + out)
+    #     if platform == 'darwin':  # MacOS
+    #         os.system('open ' + save_path)
 
     print('Done. (%.3fs)' % (time.time() - t0))
 
@@ -233,5 +233,5 @@ if __name__ == '__main__':
     import pandas as pd
 
     test_df = pd.DataFrame(results, columns=['image_id', 'PredictionString'])
-    test_df.head()
+    # test_df.head()
     test_df.to_csv('submission.csv', index=False)
