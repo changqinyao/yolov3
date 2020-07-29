@@ -178,7 +178,7 @@ def detect(save_img=False):
         boxes, scores = det[:, :4], det[:, 4]
         boxes_wh = xyxy2x0y0wh(boxes)
         result = {
-            'image_id': Path(p).name,
+            'image_id': Path(p).name[:-4],
             'PredictionString': format_prediction_string(boxes_wh, scores)
         }
 
