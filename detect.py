@@ -228,4 +228,4 @@ if __name__ == '__main__':
 
     test_df = pd.DataFrame(results, columns=['image_id', 'PredictionString'])
     test_df.head()
-    test_df.to_csv('submission.csv', index=False)
+    test_df.to_csv('/kaggle/input/global-wheat-detection/sample_submission.csv', index=False)
