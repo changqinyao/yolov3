@@ -18,7 +18,7 @@ def xyxy2x0y0wh(x):
     y[:, 1] = x[:, 1] # y0
     y[:, 2] = x[:, 2] - x[:, 0]  # width
     y[:, 3] = x[:, 3] - x[:, 1]  # height
-    return y
+    return y.int()
 
 def detect(save_img=False):
     imgsz = (320, 192) if ONNX_EXPORT else opt.img_size  # (320, 192) or (416, 256) or (608, 352) for (height, width)
