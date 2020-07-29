@@ -1,0 +1,4 @@
+classes=1
+train=/home/ubuntu/data/global-wheat-detection/images/train
+valid=/home/ubuntu/data/global-wheat-detection/images/train
+names=data/wheat.names
